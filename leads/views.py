@@ -2,9 +2,9 @@ from rest_framework import viewsets, filters, permissions, status
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
-from .models import Lead
-from .serializers import LeadSerializer
-from .permissions import IsAIBotOrAdmin
+from leads.models import Lead
+from leads.serializers import LeadSerializer
+from leads.permissions import IsAIBotOrAdmin
 from conversation.models import ConversationSender
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
