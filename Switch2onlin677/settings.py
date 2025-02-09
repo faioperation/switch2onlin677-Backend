@@ -172,11 +172,24 @@ EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
 
 # Meta API Configuration
 META_VERIFY_TOKEN = config("META_VERIFY_TOKEN", default="my_verify_token")
-META_PAGE_ACCESS_TOKEN = config("META_PAGE_ACCESS_TOKEN", default="")
-META_PAGE_ID = config("META_PAGE_ID", default="")
+
+# Facebook Page Access Token (for Messenger)
+META_FB_PAGE_ACCESS_TOKEN = config("META_FB_PAGE_ACCESS_TOKEN", default="")
+
+# Instagram Page Access Token (starts with 'IGA...', for Instagram Messaging)
+META_IG_PAGE_ACCESS_TOKEN = config("META_IG_PAGE_ACCESS_TOKEN", default="")
+
+# WhatsApp Cloud API
 META_WHATSAPP_PHONE_NUMBER_ID = config("META_WHATSAPP_PHONE_NUMBER_ID", default="")
 META_WHATSAPP_BUSINESS_ACCOUNT_ID = config(
     "META_WHATSAPP_BUSINESS_ACCOUNT_ID", default=""
+)
+
+# Kept for backward compatibility (used as fallback if platform-specific token is missing)
+META_PAGE_ACCESS_TOKEN = config("META_PAGE_ACCESS_TOKEN", default="")
+META_PAGE_ID = config("META_PAGE_ID", default="")
+META_INSTAGRAM_BUSINESS_ACCOUNT_ID = config(
+    "META_INSTAGRAM_BUSINESS_ACCOUNT_ID", default=""
 )
 
 AI_BOT_BASE_URL = config("AI_BOT_BASE_URL", default="")
