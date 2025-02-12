@@ -6,40 +6,63 @@ logger = logging.getLogger(__name__)
 
 class MetaApiClient:
     def __init__(self):
-        # WhatsApp always uses the general page token
         self.whatsapp_phone_number_id = getattr(settings, "META_WHATSAPP_PHONE_NUMBER_ID", "")
+        page_id = getattr(settings, "META_PAGE_ID", "")
 
-        # Platform-specific tokens
-        self.fb_token = (
+        raw_fb_token = (
             getattr(settings, "META_FB_PAGE_ACCESS_TOKEN", "")
             or getattr(settings, "META_PAGE_ACCESS_TOKEN", "")
         )
-        self.ig_token = (
+        raw_ig_token = (
             getattr(settings, "META_IG_PAGE_ACCESS_TOKEN", "")
-            or getattr(settings, "META_PAGE_ACCESS_TOKEN", "")
+            or raw_fb_token
         )
-        # WhatsApp uses FB token (Cloud API uses page token or system token)
         self.whatsapp_token = (
             getattr(settings, "META_PAGE_ACCESS_TOKEN", "")
-            or self.fb_token
+            or raw_fb_token
         )
 
-        # Legacy fallback
-        self.page_access_token = getattr(settings, "META_PAGE_ACCESS_TOKEN", "")
+        # Auto-resolve proper Page Access Token from any token type
+        # (works for System User tokens, User tokens, and Page tokens alike)
+        self.fb_token = self._resolve_page_token(raw_fb_token, page_id) if page_id else raw_fb_token
+        self.ig_token = raw_ig_token  # IGA token or falls back to fb_token
+
+        # Legacy
+        self.page_access_token = self.fb_token
+
+    def _resolve_page_token(self, token, page_id):
+        """
+        Exchanges any valid token (User / System User / Page) for a
+        Page Access Token by calling /{PAGE_ID}?fields=access_token.
+        This ensures /me/messages always works regardless of token type.
+        """
+        try:
+            r = requests.get(
+                f"https://graph.facebook.com/v25.0/{page_id}",
+                params={"fields": "access_token", "access_token": token},
+                timeout=5,
+            )
+            if r.status_code == 200:
+                page_token = r.json().get("access_token")
+                if page_token:
+                    logger.info(f"Page Access Token resolved for page {page_id}.")
+                    return page_token
+            logger.warning(f"Could not resolve Page token: {r.status_code} {r.text[:100]}")
+        except Exception as e:
+            logger.warning(f"Page token resolution failed: {e}")
+        return token  # fall back to original token
 
     def get_token_for_platform(self, platform):
         """
         Returns the correct access token based on the messaging platform.
-
-        IMPORTANT: Instagram Messaging (Messenger API for Instagram) uses the
-        same Facebook Page Access Token as Messenger — NOT an IGA... token.
-        The token just needs instagram_manage_messages permission.
+        - Instagram: uses META_IG_PAGE_ACCESS_TOKEN (IGA...) if available,
+          otherwise falls back to META_FB_PAGE_ACCESS_TOKEN.
+        - Facebook: uses META_FB_PAGE_ACCESS_TOKEN (EAA...).
+        - WhatsApp: uses META_PAGE_ACCESS_TOKEN.
         """
         from conversation.models import PlatformChoices
         if platform == PlatformChoices.INSTAGRAM:
-            # Instagram Messaging uses the FB Page Access Token (EAA...) with
-            # instagram_manage_messages permission — same endpoint, same token type.
-            return self.fb_token
+            return self.ig_token  # IGA... token, falls back to fb_token if not set
         elif platform == PlatformChoices.FACEBOOK:
             return self.fb_token
         else:  # whatsapp

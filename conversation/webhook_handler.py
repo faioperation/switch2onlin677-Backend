@@ -5,6 +5,11 @@ class WebhookParser:
     def parse_messenger_event(messaging_event):
         sender_id = messaging_event.get("sender", {}).get("id")
         msg = messaging_event.get("message", {})
+
+        # Skip echo messages (sent by the page/bot) — prevents infinite loop
+        if msg.get("is_echo"):
+            return None
+
         attachments = msg.get("attachments", [])
         
         media_url = None
@@ -34,6 +39,11 @@ class WebhookParser:
     def parse_instagram_event(messaging_event):
         sender_id = messaging_event.get("sender", {}).get("id")
         msg = messaging_event.get("message", {})
+
+        # Skip echo messages (sent by the bot) — prevents infinite loop
+        if msg.get("is_echo"):
+            return None
+
         attachments = msg.get("attachments", [])
         
         media_url = None

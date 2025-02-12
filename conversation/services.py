@@ -42,7 +42,8 @@ class MetaApiService:
                 payload["image"] = {"link": message_data.get("link")}
 
         elif platform == PlatformChoices.FACEBOOK:
-            # Facebook Messenger: must use /me/messages with a Page Access Token
+            # api_client auto-resolves a Page Access Token at init,
+            # so /me/messages always works correctly here.
             url = "https://graph.facebook.com/v25.0/me/messages"
             payload = {
                 "recipient": {"id": recipient_id},
@@ -57,9 +58,14 @@ class MetaApiService:
                 }
 
         elif platform == PlatformChoices.INSTAGRAM:
-            # Instagram Messaging: use /me/messages with the Page Access Token
-            # (same endpoint as FB — the token scope determines which platform)
-            url = "https://graph.facebook.com/v25.0/me/messages"
+            # System User token with instagram_manage_messages:
+            # Use /{IG_ACCOUNT_ID}/messages (NOT /me/messages)
+            # IGA token path still supported as fallback for testing
+            if token and token.startswith("IGA"):
+                url = "https://graph.instagram.com/v25.0/me/messages"
+            else:
+                ig_account_id = getattr(settings, "META_INSTAGRAM_BUSINESS_ACCOUNT_ID", "")
+                url = f"https://graph.facebook.com/v25.0/{ig_account_id}/messages"
             payload = {
                 "recipient": {"id": recipient_id},
                 "message": {},
@@ -177,6 +183,9 @@ class MetaApiService:
                             if obj_type == "page"
                             else WebhookParser.parse_instagram_event(event)
                         )
+                        # parsed is None for echo messages — skip them
+                        if parsed is None:
+                            continue
                         self._save_message(**parsed)
 
         elif obj_type == "whatsapp_business_account":
@@ -204,7 +213,7 @@ class MetaApiService:
         timestamp=None,
         sender_name=None,
     ):
-        sender, created = ConversationSender.objects.get_or_create(
+        sender, _ = ConversationSender.objects.get_or_create(
             sender_id=sender_id, defaults={"platform": platform}
         )
 
@@ -213,7 +222,7 @@ class MetaApiService:
 
         sender.save()
 
-        obj, _ = ConversationMessage.objects.get_or_create(
+        obj, msg_created = ConversationMessage.objects.get_or_create(
             message_id=msg_id,
             defaults={
                 "sender": sender,
@@ -225,13 +234,19 @@ class MetaApiService:
             },
         )
 
+        # If message already exists (duplicate webhook / echo), skip processing
+        if not msg_created:
+            logger.debug(f"Skipping duplicate message_id={msg_id}")
+            return obj
+
         if not sender.full_name and platform != PlatformChoices.WHATSAPP:
             self.fetch_user_profile(sender_id, platform)
 
         if media_url and msg_type != MessageTypeChoices.TEXT:
             self.download_and_persist_media(media_url, obj)
 
-        if is_from_customer:
+        # Only trigger bot reply for genuinely new customer messages
+        if is_from_customer and msg_created:
             threading.Thread(target=self._trigger_bot_reply, args=(obj,)).start()
 
         return obj
