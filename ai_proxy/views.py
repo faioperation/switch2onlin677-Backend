@@ -97,7 +97,7 @@ class PromptProxyView(BaseAIProxyView):
 
     @swagger_auto_schema(
         operation_summary="Get AI prompt",
-        tags=["AI Proxy"],
+        tags=["AI Proxy - Prompt"],
     )
     def get(self, request):
         return self.proxy_request("GET", "/prompt")
@@ -110,7 +110,7 @@ class PromptProxyView(BaseAIProxyView):
                 "prompt": openapi.Schema(type=openapi.TYPE_STRING),
             },
         ),
-        tags=["AI Proxy"],
+        tags=["AI Proxy - Prompt"],
     )
     def put(self, request):
         return self.proxy_request("PUT", "/prompt", data=request.data)
