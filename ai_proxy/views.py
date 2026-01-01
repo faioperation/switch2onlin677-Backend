@@ -123,7 +123,7 @@ class KnowledgeProxyView(BaseAIProxyView):
 
     @swagger_auto_schema(
         operation_summary="List knowledge base",
-        tags=["AI Proxy"],
+        tags=["AI Proxy - Knowledge Files"],
     )
     def get(self, request):
         return self.proxy_request("GET", "/knowledge")
@@ -136,7 +136,7 @@ class KnowledgeUploadProxyView(BaseAIProxyView):
 
     @swagger_auto_schema(
         operation_summary="Upload to knowledge base",
-        tags=["AI Proxy"],
+        tags=["AI Proxy - Knowledge Files"],
     )
     def post(self, request):
         # Handle file upload proxying
@@ -155,7 +155,7 @@ class KnowledgeDetailProxyView(BaseAIProxyView):
 
     @swagger_auto_schema(
         operation_summary="Delete knowledge item",
-        tags=["AI Proxy"],
+        tags=["AI Proxy - Knowledge Files"],
     )
     def delete(self, request, knowledge_id):
         return self.proxy_request("DELETE", f"/knowledge/{knowledge_id}")
