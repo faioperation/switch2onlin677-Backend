@@ -199,7 +199,7 @@ class ProductFilterProxyView(BaseAIProxyView):
 
     @swagger_auto_schema(
         operation_summary="Get product filters",
-        tags=["AI Proxy"],
+        tags=["AI Proxy - Products"],
     )
     def get(self, request):
         return self.proxy_request(
