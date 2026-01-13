@@ -168,7 +168,7 @@ class ProductTemplateProxyView(BaseAIProxyView):
 
     @swagger_auto_schema(
         operation_summary="Get product upload template",
-        tags=["AI Proxy"],
+        tags=["AI Proxy - Products"],
     )
     def get(self, request):
         return self.proxy_request("GET", "/products/upload-template")
