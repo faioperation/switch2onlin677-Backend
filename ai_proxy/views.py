@@ -217,7 +217,7 @@ class ProductListProxyView(BaseAIProxyView):
         operation_description="""
 List, search, filter and paginate products.
 """,
-        tags=["AI Proxy"],
+        tags=["AI Proxy - Products"],
         manual_parameters=PRODUCT_LIST_PARAMETERS,
         responses={200: PRODUCT_LIST_RESPONSE},
     )
