@@ -232,7 +232,7 @@ class ProductDetailProxyView(BaseAIProxyView):
 
     @swagger_auto_schema(
         operation_summary="Get product by barcode",
-        tags=["AI Proxy"],
+        tags=["AI Proxy - Products Barcode"],
     )
     def get(self, request, barcode):
         return self.proxy_request("GET", f"/products/{barcode}")
