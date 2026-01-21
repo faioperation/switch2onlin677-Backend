@@ -250,7 +250,7 @@ class ProductDetailProxyView(BaseAIProxyView):
                 "image_url": openapi.Schema(type=openapi.TYPE_STRING),
             },
         ),
-        tags=["AI Proxy"],
+        tags=["AI Proxy - Products Barcode"],
     )
     def put(self, request, barcode):
         return self.proxy_request("PUT", f"/products/{barcode}", data=request.data)
