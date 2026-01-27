@@ -4,6 +4,7 @@ import requests
 from django.conf import settings
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from ai_proxy import schemas as sc
 from ai_proxy.schemas import (
     PRODUCT_LIST_PARAMETERS,
     PRODUCT_LIST_RESPONSE,
