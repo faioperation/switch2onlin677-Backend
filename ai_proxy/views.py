@@ -6,7 +6,6 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from ai_proxy import schemas as sc
 from ai_proxy.schemas import (
-    PRODUCT_LIST_PARAMETERS,
     PRODUCT_LIST_RESPONSE,
     CATEGORY_CREATE_REQUEST,
     CATEGORY_CREATE_RESPONSE,
@@ -219,7 +218,7 @@ class ProductListProxyView(BaseAIProxyView):
 List, search, filter and paginate products.
 """,
         tags=["AI Proxy - Products"],
-        manual_parameters=PRODUCT_LIST_PARAMETERS,
+        manual_parameters=sc.PRODUCT_LIST_PARAMETERS,
         responses={200: PRODUCT_LIST_RESPONSE},
     )
     def get(self, request):
