@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from accounts import serializers as sz
 from accounts.models import User
+from api.permissions import IsAdminRole
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
@@ -40,7 +41,7 @@ class SelfProfileView(APIView):
 
 
 class UserListCreateView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminRole]
 
     @swagger_auto_schema(
         operation_summary="List all users",
@@ -70,7 +71,7 @@ class UserListCreateView(APIView):
 
 
 class UserDeleteView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminRole]
 
     @swagger_auto_schema(
         operation_summary="Delete a user",
@@ -87,6 +88,12 @@ class UserDeleteView(APIView):
     )
     def delete(self, request, user_id):
         user = get_object_or_404(User, pk=user_id)
+        # superuser check
+        if user.is_superuser:
+            return Response(
+                {"error": "Superuser cannot be deleted"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         user.delete()
 
         return Response(

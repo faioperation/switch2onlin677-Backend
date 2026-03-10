@@ -24,6 +24,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("auth/", include("accounts.urls")),
     path("api-auth/", include("rest_framework.urls")),
+    path("api/v1/", include("api.urls")),
     path(
         "swagger/",
         schema_view.with_ui("swagger", cache_timeout=0),
