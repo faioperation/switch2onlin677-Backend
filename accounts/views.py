@@ -68,6 +68,32 @@ class UserManagementView(APIView):
             status=status.HTTP_201_CREATED,
         )
 
+    @swagger_auto_schema(
+        operation_summary="Delete a user",
+        manual_parameters=[
+            openapi.Parameter(
+                "user_id",
+                openapi.IN_PATH,
+                description="ID of the user to delete",
+                type=openapi.TYPE_INTEGER,
+            )
+        ],
+        responses={204: "User deleted"},
+        tags=["Admin / Users"],
+    )
+    def delete(self, request, user_id):
+        try:
+            user = User.objects.get(pk=user_id)
+            user.delete()
+            return Response(
+                {"message": f"User {user.name} deleted successfully"},
+                status=status.HTTP_200_OK,
+            )
+        except User.DoesNotExist:
+            return Response(
+                {"error": "User not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+
 
 class LoginView(APIView):
     @swagger_auto_schema(
