@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Verify Your Account</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: #2a2a2a;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+    }
+
+    .wrapper {
+      width: 100%;
+      max-width: 500px;
+    }
+
+    .card {
+      background: #1e1e1e;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+      width: 100%;
+    }
+
+    /* Header */
+    .header {
+      padding: 32px 32px 24px 32px;
+      text-align: center;
+      border-bottom: 1px solid #333333;
+    }
+
+    .logo-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-text {
+      font-size: 26px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: 0.5px;
+    }
+
+    /* Body */
+    .body {
+      padding: 32px 36px 28px 36px;
+    }
+
+    .body p {
+      font-size: 15px;
+      color: #cccccc;
+      line-height: 1.6;
+    }
+
+    .body p.greeting {
+      margin-bottom: 6px;
+    }
+
+    .body p.subtitle {
+      margin-bottom: 28px;
+    }
+
+    .otp-wrap {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .otp-code {
+      font-size: 36px;
+      font-weight: 700;
+      letter-spacing: 8px;
+      color: #2dba4e;
+    }
+
+    .body p.note {
+      font-size: 14px;
+      color: #aaaaaa;
+      line-height: 1.7;
+    }
+
+    /* Footer */
+    .footer {
+      padding: 16px 36px 20px 36px;
+      text-align: center;
+    }
+
+    .footer span {
+      font-size: 13px;
+      color: #aaaaaa;
+    }
+
+    .footer a {
+      font-size: 13px;
+      color: #2dba4e;
+      text-decoration: none;
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .header {
+        padding: 24px 20px 20px 20px;
+      }
+
+      .body {
+        padding: 24px 20px 20px 20px;
+      }
+
+      .footer {
+        padding: 14px 20px 18px 20px;
+      }
+
+      .logo-text {
+        font-size: 22px;
+      }
+
+      .body p,
+      .body p.greeting,
+      .body p.subtitle {
+        font-size: 14px;
+      }
+
+      .otp-code {
+        font-size: 28px;
+        letter-spacing: 6px;
+      }
+
+      .body p.note {
+        font-size: 13px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrapper">
+    <div class="card">
+      <!-- Header / Logo -->
+      <div class="header">
+        <div class="logo-wrap">
+          <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <line x1="18" y1="2" x2="18" y2="34" stroke="#2dba4e" stroke-width="3.5" stroke-linecap="round" />
+            <line x1="2" y1="18" x2="34" y2="18" stroke="#2dba4e" stroke-width="3.5" stroke-linecap="round" />
+            <line x1="6.1" y1="6.1" x2="29.9" y2="29.9" stroke="#2dba4e" stroke-width="3.5" stroke-linecap="round" />
+            <line x1="29.9" y1="6.1" x2="6.1" y2="29.9" stroke="#2dba4e" stroke-width="3.5" stroke-linecap="round" />
+            <circle cx="18" cy="2" r="2" fill="#2dba4e" />
+            <circle cx="18" cy="34" r="2" fill="#2dba4e" />
+            <circle cx="2" cy="18" r="2" fill="#2dba4e" />
+            <circle cx="34" cy="18" r="2" fill="#2dba4e" />
+            <circle cx="6.1" cy="6.1" r="2" fill="#2dba4e" />
+            <circle cx="29.9" cy="29.9" r="2" fill="#2dba4e" />
+            <circle cx="29.9" cy="6.1" r="2" fill="#2dba4e" />
+            <circle cx="6.1" cy="29.9" r="2" fill="#2dba4e" />
+          </svg>
+          <span class="logo-text">LoGo</span>
+        </div>
+      </div>
+
+      <!-- Body -->
+      <div class="body">
+        <p class="greeting">Dear User,</p>
+        <p class="subtitle">Your one time password (OTP) is:</p>
+
+        <div class="otp-wrap">
+          <span class="otp-code">{{ OTP }}</span>
+        </div>
+
+        <p style="font-size: 13px; color: #6b7280">
+          ⏳ This code expires in <b>5 minutes</b>
+        </p>
+        <p class="note">Please use this OTP to complete your login process. Do not share this code with anyone.</p>
+      </div>
+
+      <!-- Footer -->
+      <div class="footer">
+        <span>@</span>©️ swich2online<span>. All rights Reserved</span>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>

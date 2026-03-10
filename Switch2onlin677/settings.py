@@ -1,5 +1,6 @@
 from pathlib import Path
 from datetime import timedelta
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -14,8 +15,6 @@ SECRET_KEY = "django-insecure-8a=-hl6kihv)h3tg&xf=81=7_a+n^&sxag97t1jb*b4_p#2bm=
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -26,6 +25,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "drf_yasg",
     "rest_framework",
     "rest_framework_simplejwt",
     "corsheaders",
@@ -106,7 +106,7 @@ USE_I18N = True
 
 USE_TZ = True
 
-# AUTH_USER_MODEL = "accounts.User"
+AUTH_USER_MODEL = "accounts.User"
 INTERNAL_IPS = [
     "127.0.0.1",
 ]
@@ -131,5 +131,16 @@ SIMPLE_JWT = {
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://localhost:5174",
+    "https://charissa-intuitable-corroboratorily.ngrok-free.dev",
 ]
 ALLOWED_HOSTS = ["172.252.13.97", "127.0.0.1", ".ngrok-free.dev"]
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://charissa-intuitable-corroboratorily.ngrok-free.dev",
+]
+EMAIL_BACKEND = config("EMAIL_BACKEND")
+EMAIL_HOST = config("EMAIL_HOST")
+EMAIL_PORT = config("EMAIL_PORT")
+EMAIL_USE_TLS = config("EMAIL_USE_TLS")
+EMAIL_HOST_USER = config("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
