@@ -135,6 +135,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://localhost:5174",
     "https://charissa-intuitable-corroboratorily.ngrok-free.dev",
+    "https://switch2onlin677-frontend.vercel.app",
 ]
 ALLOWED_HOSTS = [
     "172.252.13.97",
@@ -145,7 +146,10 @@ ALLOWED_HOSTS = [
 
 CSRF_TRUSTED_ORIGINS = [
     "https://charissa-intuitable-corroboratorily.ngrok-free.dev",
+    "https://switch2onlin677-frontend.vercel.app",
 ]
+CORS_ALLOW_CREDENTIALS = True
+
 EMAIL_BACKEND = config("EMAIL_BACKEND")
 EMAIL_HOST = config("EMAIL_HOST")
 EMAIL_PORT = config("EMAIL_PORT")
