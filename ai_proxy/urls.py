@@ -1,7 +1,6 @@
 from django.urls import path
 from ai_proxy import views
 from ai_proxy.views import (
-    ProductUploadProxyView,
     ProductListProxyView,
     ProductDetailProxyView,
     CategoryDetailsProxyView,
@@ -38,7 +37,7 @@ urlpatterns = [
     ),
     path(
         "products/upload/",
-        ProductUploadProxyView.as_view(),
+        views.ProductUploadProxyView.as_view(),
         name="ai-product-upload-proxy",
     ),
     path("products/", ProductListProxyView.as_view(), name="ai-product-list-proxy"),
