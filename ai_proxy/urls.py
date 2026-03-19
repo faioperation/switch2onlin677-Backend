@@ -1,7 +1,6 @@
 from django.urls import path
 from ai_proxy import views
 from ai_proxy.views import (
-    ProductTemplateProxyView,
     ProductUploadProxyView,
     ProductListProxyView,
     ProductDetailProxyView,
