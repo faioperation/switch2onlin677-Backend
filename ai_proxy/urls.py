@@ -34,7 +34,7 @@ urlpatterns = [
     ),
     path(
         "products/upload-template/",
-        ProductTemplateProxyView.as_view(),
+        views.ProductTemplateProxyView.as_view(),
         name="ai-product-template-proxy",
     ),
     path(
