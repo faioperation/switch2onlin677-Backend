@@ -3,7 +3,6 @@ from ai_proxy import views
 from ai_proxy.views import (
     ProductTemplateProxyView,
     ProductUploadProxyView,
-    ProductFilterProxyView,
     ProductListProxyView,
     ProductDetailProxyView,
     CategoryDetailsProxyView,
@@ -30,7 +29,7 @@ urlpatterns = [
     ),
     path(
         "products/filters/",
-        ProductFilterProxyView.as_view(),
+        views.ProductFilterProxyView.as_view(),
         name="ai-product-filter-proxy",
     ),
     path(
