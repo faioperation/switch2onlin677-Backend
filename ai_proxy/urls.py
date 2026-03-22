@@ -1,7 +1,6 @@
 from django.urls import path
 from ai_proxy import views
 from ai_proxy.views import (
-    KnowledgeDetailProxyView,
     ProductTemplateProxyView,
     ProductUploadProxyView,
     ProductFilterProxyView,
@@ -26,7 +25,7 @@ urlpatterns = [
     ),
     path(
         "knowledge/<str:knowledge_id>/",
-        KnowledgeDetailProxyView.as_view(),
+        views.KnowledgeDetailProxyView.as_view(),
         name="ai-knowledge-detail-proxy",
     ),
     path(
