@@ -6,7 +6,6 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from ai_proxy import schemas as sc
 from ai_proxy.schemas import (
-    SUBCATEGORY_LIST_RESPONSE,
     SUBCATEGORY_LIST_PARAMETERS,
 )
 
@@ -385,7 +384,7 @@ Retrieve subcategory list with:
         tags=["AI Proxy Subcategories"],
         manual_parameters=SUBCATEGORY_LIST_PARAMETERS,
         responses={
-            200: SUBCATEGORY_LIST_RESPONSE,
+            200: sc.SUBCATEGORY_LIST_RESPONSE,
         },
     )
     def get(self, request):
