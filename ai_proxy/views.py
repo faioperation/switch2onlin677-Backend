@@ -6,7 +6,6 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from ai_proxy import schemas as sc
 from ai_proxy.schemas import (
-    BRAND_LIST_RESPONSE,
     SUBCATEGORY_CREATE_REQUEST,
     SUBCATEGORY_CREATE_RESPONSE,
     SUBCATEGORY_DETAILS_RESPONSE,
@@ -329,7 +328,7 @@ Retrieve brand list with:
         tags=["AI Proxy Brands"],
         manual_parameters=sc.BRAND_LIST_PARAMETERS,
         responses={
-            200: BRAND_LIST_RESPONSE,
+            200: sc.BRAND_LIST_RESPONSE,
         },
     )
     def get(self, request):
