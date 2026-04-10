@@ -6,7 +6,6 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from ai_proxy import schemas as sc
 from ai_proxy.schemas import (
-    BRAND_CREATE_RESPONSE,
     BRAND_DETAILS_RESPONSE,
     BRAND_LIST_PARAMETERS,
     BRAND_LIST_RESPONSE,
@@ -350,7 +349,7 @@ Features:
         tags=["AI Proxy Brands"],
         request_body=sc.BRAND_CREATE_REQUEST,
         responses={
-            201: BRAND_CREATE_RESPONSE,
+            201: sc.BRAND_CREATE_RESPONSE,
         },
     )
     def post(self, request):
