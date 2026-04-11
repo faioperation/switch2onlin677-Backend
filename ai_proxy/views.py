@@ -6,8 +6,6 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from ai_proxy import schemas as sc
 from ai_proxy.schemas import (
-    CATEGORY_LIST_RESPONSE,
-    BRAND_CREATE_REQUEST,
     BRAND_CREATE_RESPONSE,
     BRAND_DETAILS_RESPONSE,
     BRAND_LIST_PARAMETERS,
@@ -275,7 +273,7 @@ Retrieve category list with:
         tags=["AI Proxy Categories"],
         manual_parameters=sc.CATEGORY_LIST_PARAMETERS,
         responses={
-            200: CATEGORY_LIST_RESPONSE,
+            200: sc.CATEGORY_LIST_RESPONSE,
         },
     )
     def get(self, request):
@@ -350,7 +348,7 @@ Features:
 - Arabic name support
 """,
         tags=["AI Proxy Brands"],
-        request_body=BRAND_CREATE_REQUEST,
+        request_body=sc.BRAND_CREATE_REQUEST,
         responses={
             201: BRAND_CREATE_RESPONSE,
         },
