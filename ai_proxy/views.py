@@ -6,7 +6,6 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from ai_proxy import schemas as sc
 from ai_proxy.schemas import (
-    CATEGORY_DETAILS_RESPONSE,
     CATEGORY_LIST_PARAMETERS,
     CATEGORY_LIST_RESPONSE,
     BRAND_CREATE_REQUEST,
@@ -312,7 +311,7 @@ class CategoryDetailsProxyView(BaseAIProxyView):
         operation_description="Retrieve category details by ID",
         tags=["AI Proxy Categories"],
         responses={
-            200: CATEGORY_DETAILS_RESPONSE,
+            200: sc.CATEGORY_DETAILS_RESPONSE,
         },
     )
     def get(self, request, id):
