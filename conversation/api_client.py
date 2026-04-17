@@ -31,14 +31,14 @@ class MetaApiClient:
         For Facebook: user_id is the Page-Scoped User ID (PSID).
         For Instagram: user_id is the Instagram-Scoped User ID (IGSID).
         """
-        url = f"https://graph.facebook.com/v21.0/{user_id}"
+        url = f"https://graph.facebook.com/v20.0/{user_id}"
         params = {
             "fields": fields,
             "access_token": self.page_access_token,
         }
         try:
             response = requests.get(url, params=params)
-            logger.info(f"Profile fetch for {user_id}: status={response.status_code}, url={response.url}")
+            logger.info(f"Profile fetch for {user_id}: status={response.status_code}")
             if response.status_code != 200:
                 logger.error(f"Profile fetch failed: {response.text}")
             return response.status_code, response.json()
@@ -50,9 +50,13 @@ class MetaApiClient:
         """
         Gets the download URL for a given Meta Media ID.
         """
-        url = f"https://graph.facebook.com/v21.0/{media_id}"
+        url = f"https://graph.facebook.com/v20.0/{media_id}"
+        params = {
+            "access_token": self.page_access_token,
+        }
         try:
-            response = requests.get(url, headers=self.get_headers())
+            # Passing token as query param is often more reliable for media IDs
+            response = requests.get(url, params=params)
             if response.status_code != 200:
                 logger.error(f"Meta Media Info Error: {response.status_code} - {response.text}")
             return response.status_code, response.json()

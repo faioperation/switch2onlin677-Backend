@@ -24,7 +24,7 @@ class MetaApiService:
 
         if platform == PlatformChoices.WHATSAPP:
             phone_id = self.client.whatsapp_phone_number_id
-            url = f"https://graph.facebook.com/v21.0/{phone_id}/messages"
+            url = f"https://graph.facebook.com/v20.0/{phone_id}/messages"
             payload = {
                 "messaging_product": "whatsapp",
                 "to": recipient_id,
@@ -36,7 +36,7 @@ class MetaApiService:
                 payload["image"] = {"link": message_data.get("link")}
 
         elif platform in [PlatformChoices.FACEBOOK, PlatformChoices.INSTAGRAM]:
-            url = "https://graph.facebook.com/v21.0/me/messages"
+            url = "https://graph.facebook.com/v20.0/me/messages"
             payload = {
                 "recipient": {"id": recipient_id},
                 "message": {},
@@ -81,22 +81,31 @@ class MetaApiService:
         if not sender:
             return None
 
-        # Facebook and Instagram both support 'name' and 'profile_pic'
-        # via the Page Access Token when using the scoped user ID.
-        fields = "name,profile_pic"
+        # Expanded fields to cover Instagram vs Facebook differences
+        # IG often needs 'username' while FB needs 'name', 'first_name', 'last_name'
+        fields = "id,name,username,first_name,last_name,profile_pic"
 
         status_code, data = self.client.fetch_user_profile(user_id, fields)
 
         if status_code == 200:
-            name = data.get("name", "")
-            pic = data.get("profile_pic")
+            # Try to build a full name from multiple possible fields
+            name = data.get("name")
+            username = data.get("username")
+            first = data.get("first_name")
+            last = data.get("last_name")
             
-            if name:
-                sender.full_name = name
+            final_name = name or username
+            if not final_name and first:
+                final_name = f"{first} {last or ''}".strip()
+
+            if final_name:
+                sender.full_name = final_name
+            
+            pic = data.get("profile_pic")
             if pic:
                 sender.profile_pic_url = pic
                 
-            logger.info(f"Profile OK for {platform} user {user_id}: name='{sender.full_name}', has_pic={bool(pic)}")
+            logger.info(f"Profile OK for {platform} user {user_id}: name='{sender.full_name}'")
         else:
             logger.warning(f"Profile fetch failed for {platform} user {user_id}: {data}")
 
