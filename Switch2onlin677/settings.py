@@ -36,9 +36,9 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -144,17 +144,18 @@ CSRF_TRUSTED_ORIGINS = [
     o.strip() for o in config("CSRF_TRUSTED_ORIGINS", default="").split(",") if o
 ]
 # CSRF_TRUSTED_ORIGINS = config("CSRF_TRUSTED_ORIGINS", default="").split(",")
-CORS_ALLOW_ALL_ORIGINS = True  # Added for debug, you can narrow this down later
+CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOW_CREDENTIALS = True
 
 # Add ngrok-skip-browser-warning to allowed headers
 from corsheaders.defaults import default_headers
+
 CORS_ALLOW_HEADERS = list(default_headers) + [
     "ngrok-skip-browser-warning",
 ]
 
 # Tell Django we are behind a proxy that provides HTTPS
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 proxy_ssl_header = config("SECURE_PROXY_SSL_HEADER", default=None)
 if proxy_ssl_header:
     # If set in .env as "HTTP_X_FORWARDED_PROTO,https"

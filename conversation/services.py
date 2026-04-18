@@ -81,9 +81,14 @@ class MetaApiService:
         if not sender:
             return None
 
-        # Expanded fields to cover Instagram vs Facebook differences
-        # IG often needs 'username' while FB needs 'name', 'first_name', 'last_name'
-        fields = "id,name,username,first_name,last_name,profile_pic"
+        # Facebook and Instagram support different fields.
+        # Requesting IG fields from FB (or vice versa) can cause OAuthException capability errors.
+        if platform == PlatformChoices.FACEBOOK:
+            fields = "id,name,first_name,last_name,profile_pic"
+        elif platform == PlatformChoices.INSTAGRAM:
+            fields = "id,name,username,profile_pic"
+        else:
+            fields = "id,name,profile_pic"
 
         status_code, data = self.client.fetch_user_profile(user_id, fields)
 
