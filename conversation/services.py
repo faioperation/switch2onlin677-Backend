@@ -11,6 +11,8 @@ from conversation.api_client import MetaApiClient
 from conversation.webhook_handler import WebhookParser
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
+import threading
+from conversation.bot_service import BotService
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +38,12 @@ class MetaApiService:
                 payload["image"] = {"link": message_data.get("link")}
 
         elif platform in [PlatformChoices.FACEBOOK, PlatformChoices.INSTAGRAM]:
-            url = "https://graph.facebook.com/v20.0/me/messages"
+            # Use explicit Page ID if available, otherwise fallback to 'me'
+            page_id = getattr(settings, "META_PAGE_ID", "me")
+            if not page_id or str(page_id).strip() == "":
+                page_id = "me"
+                
+            url = f"https://graph.facebook.com/v20.0/{page_id}/messages"
             payload = {
                 "recipient": {"id": recipient_id},
                 "message": {},
@@ -49,6 +56,7 @@ class MetaApiService:
                     "payload": {"url": message_data.get("link"), "is_reusable": True},
                 }
 
+        print(f"MetaApiService: Sending to {platform} via {url}")
         status_code, response_data = self.client.send_meta_request(url, payload)
         
         if status_code == 200:
@@ -68,12 +76,6 @@ class MetaApiService:
             return response_data
 
     def fetch_user_profile(self, user_id, platform):
-        """
-        Fetches user profile (name + picture) from Meta Graph API.
-        - Facebook: Page-Scoped User ID (PSID) → Graph API returns name, profile_pic.
-        - Instagram: Instagram-Scoped User ID (IGSID) → Graph API returns name, profile_pic.
-        - WhatsApp: NOT supported via Graph API. Name comes from webhook contacts[].
-        """
         if platform == PlatformChoices.WHATSAPP:
             return None
 
@@ -81,8 +83,6 @@ class MetaApiService:
         if not sender:
             return None
 
-        # Facebook and Instagram support different fields.
-        # Requesting IG fields from FB (or vice versa) can cause OAuthException capability errors.
         if platform == PlatformChoices.FACEBOOK:
             fields = "id,name,first_name,last_name,profile_pic"
         elif platform == PlatformChoices.INSTAGRAM:
@@ -93,7 +93,6 @@ class MetaApiService:
         status_code, data = self.client.fetch_user_profile(user_id, fields)
 
         if status_code == 200:
-            # Try to build a full name from multiple possible fields
             name = data.get("name")
             username = data.get("username")
             first = data.get("first_name")
@@ -114,7 +113,6 @@ class MetaApiService:
         else:
             logger.warning(f"Profile fetch failed for {platform} user {user_id}: {data}")
 
-        # Fallback if name is still empty
         if not sender.full_name:
             suffix = user_id[-4:] if len(user_id) >= 4 else user_id
             sender.full_name = f"User-{suffix}"
@@ -138,7 +136,6 @@ class MetaApiService:
                 for change in entry.get("changes", []):
                     value = change.get("value", {})
                     messages = value.get("messages", [])
-                    # 'contacts' array in the webhook value contains name info
                     contacts = value.get("contacts", [])
                     for msg in messages:
                         parsed = WebhookParser.parse_whatsapp_event(msg, contacts=contacts)
@@ -148,11 +145,10 @@ class MetaApiService:
     def _save_message(self, sender_id, platform, msg_id, text, media_url, msg_type, is_from_customer=True, timestamp=None, sender_name=None):
         sender, created = ConversationSender.objects.get_or_create(sender_id=sender_id, defaults={"platform": platform})
         
-        # If sender name came from the webhook payload (WhatsApp contacts field), save it directly
         if sender_name and not sender.full_name:
             sender.full_name = sender_name
         
-        sender.save()  # Always update last_interaction
+        sender.save()
         
         obj, _ = ConversationMessage.objects.get_or_create(
             message_id=msg_id,
@@ -166,29 +162,49 @@ class MetaApiService:
             }
         )
         
-        # For Facebook/Instagram where name isn't in the webhook, fetch from Graph API
         if not sender.full_name and platform != PlatformChoices.WHATSAPP:
             self.fetch_user_profile(sender_id, platform)
             
-        # If it's media, download it locally
         if media_url and msg_type != MessageTypeChoices.TEXT:
             self.download_and_persist_media(media_url, obj)
+
+        if is_from_customer:
+            threading.Thread(
+                target=self._trigger_bot_reply,
+                args=(obj,)
+            ).start()
             
         return obj
 
+    def _trigger_bot_reply(self, message_obj):
+        bot_service = BotService()
+        bot_res = bot_service.get_bot_reply_for_message(message_obj)
+        
+        if not bot_res:
+            return
+
+        sender_id = message_obj.sender.sender_id
+        platform = message_obj.sender.platform
+        reply_text = bot_res.get("reply")
+        image_url = bot_res.get("image_url")
+        products = bot_res.get("products", [])
+
+        if reply_text:
+            self.send_message(sender_id, {"type": "text", "text": reply_text}, platform)
+
+        if image_url:
+            self.send_message(sender_id, {"type": "image", "link": image_url}, platform)
+
+        if products:
+            product_text = "*Found Products:*\n"
+            for p in products:
+                product_text += f"- {p.get('name')} ({p.get('price')})\n"
+            self.send_message(sender_id, {"type": "text", "text": product_text}, platform)
+
     def download_and_persist_media(self, media_id, message_obj):
-        """
-        Downloads media from Meta and saves it to the local filesystem.
-        """
-        # If it's already a local path, skip
         if not str(media_id).isdigit():
             return
 
-        filename_base = f"conversations/{media_id}"
-        # Check if any file with this base name already exists (regardless of extension)
-        # This prevents redundant downloads if we already have it.
-        # Simple implementation: check common extensions or just the base.
-        
         status_code, media_info = self.client.get_media_info(media_id)
         if status_code != 200:
             logger.error(f"Persistence: Could not fetch info for media {media_id} - {media_info}")
@@ -197,21 +213,11 @@ class MetaApiService:
         download_url = media_info.get("url")
         mime_type = media_info.get("mime_type", "application/octet-stream")
         
-        logger.info(f"Persistence: Info fetched for {media_id}. Type: {mime_type}")
-        
-        # Broad extension mapping
         ext_map = {
-            "image/jpeg": "jpg", 
-            "image/png": "png", 
-            "image/webp": "webp",
-            "video/mp4": "mp4", 
-            "audio/mpeg": "mp3", 
-            "audio/ogg": "ogg",
-            "audio/amr": "amr",
-            "application/pdf": "pdf",
-            "application/msword": "doc",
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "docx",
-            "image/gif": "gif"
+            "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp",
+            "video/mp4": "mp4", "audio/mpeg": "mp3", "audio/ogg": "ogg",
+            "audio/amr": "amr", "application/pdf": "pdf", "application/msword": "doc",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "docx", "image/gif": "gif"
         }
         ext = ext_map.get(mime_type, mime_type.split("/")[-1] if "/" in mime_type else "bin")
 
@@ -221,15 +227,10 @@ class MetaApiService:
             return
 
         filename = f"conversations/{media_id}.{ext}"
-        
-        # Overwrite if exists to avoid duplicates
         if default_storage.exists(filename):
             default_storage.delete(filename)
             
         path = default_storage.save(filename, ContentFile(media_response.content))
-        
-        # Update the message object with local path
         message_obj.media_url = path
         message_obj.save()
         logger.info(f"Media persisted to: {path}")
-

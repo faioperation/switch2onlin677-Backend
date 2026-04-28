@@ -48,7 +48,7 @@ class ConversationMessage(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ["timestamp"]
+        ordering = ["-timestamp"]
 
     def __str__(self):
         direction = "Incoming" if self.is_from_customer else "Outgoing"

@@ -144,7 +144,7 @@ CSRF_TRUSTED_ORIGINS = [
     o.strip() for o in config("CSRF_TRUSTED_ORIGINS", default="").split(",") if o
 ]
 # CSRF_TRUSTED_ORIGINS = config("CSRF_TRUSTED_ORIGINS", default="").split(",")
-CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
 # Add ngrok-skip-browser-warning to allowed headers
@@ -176,3 +176,5 @@ META_WHATSAPP_PHONE_NUMBER_ID = config("META_WHATSAPP_PHONE_NUMBER_ID", default=
 META_WHATSAPP_BUSINESS_ACCOUNT_ID = config(
     "META_WHATSAPP_BUSINESS_ACCOUNT_ID", default=""
 )
+
+AI_BOT_BASE_URL = config("AI_BOT_BASE_URL", default="")

@@ -64,6 +64,7 @@ class WebhookParser:
         whatsapp_type = msg.get("type")
         msg_type = MessageTypeChoices.TEXT
         media_url = None
+        text_content = None
         
         # Map WhatsApp types to our internal MessageTypeChoices
         type_map = {
@@ -77,11 +78,17 @@ class WebhookParser:
         
         if whatsapp_type in type_map:
             msg_type = type_map[whatsapp_type]
-            media_url = msg.get(whatsapp_type, {}).get("id")
+            media_data = msg.get(whatsapp_type, {})
+            media_url = media_data.get("id")
+            # --- CAPTION FIX ---
+            # Extract caption from image/video/document if it exists
+            text_content = media_data.get("caption")
+        
+        # If it's a plain text message, get the body
+        if whatsapp_type == "text":
+            text_content = msg.get("text", {}).get("body")
 
         # --- NAME FIX ---
-        # WhatsApp sends the sender's name in the 'contacts' array of the webhook value.
-        # We match by wa_id (the phone number) to get the name.
         sender_name = None
         sender_id = msg.get("from")
         if contacts:
@@ -95,7 +102,7 @@ class WebhookParser:
             "sender_id": sender_id,
             "platform": PlatformChoices.WHATSAPP,
             "msg_id": msg.get("id"),
-            "text": msg.get("text", {}).get("body"),
+            "text": text_content,
             "media_url": media_url,
             "msg_type": msg_type,
             "sender_name": sender_name,
