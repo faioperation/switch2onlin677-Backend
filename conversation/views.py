@@ -2,6 +2,7 @@ from django.conf import settings
 from django.http import HttpResponse, StreamingHttpResponse
 from rest_framework import viewsets, views, status, response, generics
 from rest_framework.decorators import action
+from rest_framework.pagination import PageNumberPagination
 from django.shortcuts import get_object_or_404
 from conversation.models import (
     ConversationSender,
@@ -53,6 +54,12 @@ class WebhookView(views.APIView):
         return response.Response("EVENT_RECEIVED", status=status.HTTP_200_OK)
 
 
+class ConversationPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = "page_size"
+    max_page_size = 100
+
+
 class ConversationSenderViewSet(viewsets.ReadOnlyModelViewSet):
     """
     API for listing and retrieving senders (users).
@@ -61,6 +68,7 @@ class ConversationSenderViewSet(viewsets.ReadOnlyModelViewSet):
 
     queryset = ConversationSender.objects.all().order_by("-last_interaction")
     serializer_class = ConversationSenderSerializer
+    pagination_class = ConversationPagination
 
     @swagger_auto_schema(tags=["Conversations"])
     def list(self, request, *args, **kwargs):
@@ -82,8 +90,10 @@ class ConversationSenderViewSet(viewsets.ReadOnlyModelViewSet):
         Access via: /api/v1/conversation/senders/{id}/messages/
         """
         sender = self.get_object()
-        messages = sender.messages.all().order_by("timestamp")
-        serializer = ConversationMessageSerializer(messages, many=True, context={"request": request})
+        messages = sender.messages.select_related("sender").all().order_by("timestamp")
+        serializer = ConversationMessageSerializer(
+            messages, many=True, context={"request": request}
+        )
         return response.Response(serializer.data)
 
 

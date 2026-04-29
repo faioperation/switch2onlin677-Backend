@@ -1,63 +1,89 @@
-from rest_framework import viewsets, filters, permissions
+from rest_framework import viewsets, filters, permissions, status
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.response import Response
 from .models import Lead
 from .serializers import LeadSerializer
 from .permissions import IsAIBotOrAdmin
+from conversation.models import ConversationSender
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
+
 class LeadPagination(PageNumberPagination):
-    page_size = 20
-    page_size_query_param = 'page_size'
+    page_size = 10
+    page_size_query_param = "page_size"
     max_page_size = 100
 
+
 class LeadViewSet(viewsets.ModelViewSet):
-    queryset = Lead.objects.all().order_by('-date')
+    queryset = Lead.objects.select_related("sender").all().order_by("-date")
     serializer_class = LeadSerializer
     pagination_class = LeadPagination
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ["platform"]
-    search_fields = ["name", "interested_product"]
-    
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter,
+    ]
+    filterset_fields = ["sender__platform"]
+    search_fields = ["interested_product"]
+
     def get_permissions(self):
-        """
-        AI Bot can POST leads using X-Api-Key.
-        Admin can do everything.
-        """
-        if self.action == 'create':
-            return [permissions.AllowAny()] # Handled in dispatch or specifically
+        if self.action == "create":
+            return [permissions.AllowAny()]
         return [permissions.IsAdminUser()]
 
-    # Overriding permission check for 'create' to support API Key
     def check_permissions(self, request):
-        if self.action == 'create':
+        if self.action == "create":
             perm = IsAIBotOrAdmin()
             if not perm.has_permission(request, self):
-                self.permission_denied(request, message="Invalid API Key or Unauthorized")
+                self.permission_denied(
+                    request, message="Invalid API Key or Unauthorized"
+                )
         else:
             super().check_permissions(request)
 
     @swagger_auto_schema(
-        operation_description="Create a new lead from the AI Bot. Requires 'X-Api-Key' in headers.",
-        manual_parameters=[
-            openapi.Parameter(
-                'X-Api-Key', 
-                openapi.IN_HEADER, 
-                description="Secret key for AI bot authentication", 
-                type=openapi.TYPE_STRING,
-                required=True
-            )
-        ],
-        request_body=LeadSerializer,
-        responses={201: LeadSerializer()}
+        operation_description="Create a new lead. Bot only needs to send 'user_id' and 'interested_product'.",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=["user_id", "interested_product"],
+            properties={
+                "user_id": openapi.Schema(
+                    type=openapi.TYPE_STRING, description="Meta Sender ID"
+                ),
+                "interested_product": openapi.Schema(type=openapi.TYPE_STRING),
+            },
+        ),
+        responses={201: LeadSerializer()},
     )
     def create(self, request, *args, **kwargs):
-        return super().create(request, *args, **kwargs)
+        user_id = request.data.get("user_id")
+        interested_product = request.data.get("interested_product")
+
+        if not user_id or not interested_product:
+            return Response(
+                {"error": "user_id and interested_product are required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Find the sender
+        sender = ConversationSender.objects.filter(sender_id=user_id).first()
+        if not sender:
+            return Response(
+                {"error": f"No conversation found for user_id: {user_id}"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Create the lead
+        lead = Lead.objects.create(sender=sender, interested_product=interested_product)
+
+        serializer = self.get_serializer(lead)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @swagger_auto_schema(
         operation_description="List all leads. Admin only.",
-        responses={200: LeadSerializer(many=True)}
+        responses={200: LeadSerializer(many=True)},
     )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
