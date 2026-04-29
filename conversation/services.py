@@ -56,7 +56,6 @@ class MetaApiService:
                     "payload": {"url": message_data.get("link"), "is_reusable": True},
                 }
 
-        print(f"MetaApiService: Sending to {platform} via {url}")
         status_code, response_data = self.client.send_meta_request(url, payload)
         
         if status_code == 200:

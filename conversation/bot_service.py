@@ -61,7 +61,6 @@ class BotService:
             "platform": platform
         }
         
-        print(f"BotService: Sending payload to bot: {payload}")
         try:
             response = requests.post(self.api_url, json=payload, timeout=60)
             

@@ -9,5 +9,6 @@ api/__pycache__
 agent_manage/__pycache__
 conversation/__pycache__
 conversation/management/commands/__pycache__
+leads/__pycache__
 
 media

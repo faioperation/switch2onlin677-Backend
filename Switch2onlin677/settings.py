@@ -32,6 +32,8 @@ INSTALLED_APPS = [
     "accounts",
     "agent_manage",
     "conversation",
+    "django_filters",
+    "leads",
 ]
 
 MIDDLEWARE = [
@@ -123,7 +125,6 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
-    # "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
 }
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=7),
@@ -178,3 +179,4 @@ META_WHATSAPP_BUSINESS_ACCOUNT_ID = config(
 )
 
 AI_BOT_BASE_URL = config("AI_BOT_BASE_URL", default="")
+LEADS_API_KEY = config("LEADS_API_KEY", default="")
