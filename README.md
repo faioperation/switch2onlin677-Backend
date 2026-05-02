@@ -107,4 +107,5 @@ Access Swagger documentation at `http://127.0.0.1:8000/swagger/`.
 
 This project is proprietary. Unauthorized use, copying, or distribution is strictly prohibited without explicit permission from the author. See `LICENSE` for full details.
 
-Built with passion by Arif 🖤💻
+Built with passion by **[Arif](https://www.linkedin.com/in/aru01)** 🖤💻
+
