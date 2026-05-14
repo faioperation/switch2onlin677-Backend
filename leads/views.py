@@ -4,7 +4,6 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from leads.models import Lead
 from leads.serializers import LeadSerializer
-from leads.permissions import IsAIBotOrAdmin
 from conversation.models import ConversationSender
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
@@ -33,15 +32,6 @@ class LeadViewSet(viewsets.ModelViewSet):
             return [permissions.AllowAny()]
         return [permissions.IsAdminUser()]
 
-    def check_permissions(self, request):
-        if self.action == "create":
-            perm = IsAIBotOrAdmin()
-            if not perm.has_permission(request, self):
-                self.permission_denied(
-                    request, message="Invalid API Key or Unauthorized"
-                )
-        else:
-            super().check_permissions(request)
 
     @swagger_auto_schema(
         operation_description="Create a new lead. Bot only needs to send 'user_id' and 'interested_product'.",
