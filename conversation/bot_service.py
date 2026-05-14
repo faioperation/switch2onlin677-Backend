@@ -62,7 +62,7 @@ class BotService:
         }
 
         try:
-            response = requests.post(self.api_url, json=payload, timeout=60)
+            response = requests.post(self.api_url, json=payload, timeout=300)
 
             if response.status_code == 200:
                 data = response.json()
