@@ -1,4 +1,6 @@
-from rest_framework import viewsets, filters, permissions, status
+from rest_framework import viewsets, filters, permissions, status, views
+import requests
+from django.conf import settings
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
@@ -31,7 +33,6 @@ class LeadViewSet(viewsets.ModelViewSet):
         if self.action == "create":
             return [permissions.AllowAny()]
         return [permissions.IsAdminUser()]
-
 
     @swagger_auto_schema(
         operation_description="Create a new lead. Bot only needs to send 'user_id' and 'interested_product'.",
@@ -93,3 +94,35 @@ class LeadViewSet(viewsets.ModelViewSet):
     @swagger_auto_schema(tags=["Leads"])
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
+
+
+class BotRateProxyView(views.APIView):
+    permission_classes = [permissions.AllowAny]
+
+    @swagger_auto_schema(
+        operation_description="Proxy request to AI Bot /rate endpoint",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                "iqd_rate": openapi.Schema(type=openapi.TYPE_NUMBER),
+            },
+        ),
+        responses={200: openapi.Schema(type=openapi.TYPE_OBJECT)},
+        tags=["Leads"],
+    )
+    def post(self, request, *args, **kwargs):
+        base_url = getattr(settings, "AI_BOT_BASE_URL", "").rstrip("/")
+        if not base_url:
+            return Response(
+                {"error": "AI_BOT_BASE_URL not configured"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        target_url = f"{base_url}/rate"
+        try:
+            response = requests.post(target_url, json=request.data, timeout=30)
+            return Response(response.json(), status=response.status_code)
+        except Exception as e:
+            return Response(
+                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
