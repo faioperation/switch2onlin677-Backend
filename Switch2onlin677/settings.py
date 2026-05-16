@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     "django_filters",
     "leads",
     "dashboard",
+    "ai_proxy",
 ]
 
 MIDDLEWARE = [
