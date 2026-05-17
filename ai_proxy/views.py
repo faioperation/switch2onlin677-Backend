@@ -19,7 +19,7 @@ class BaseAIProxyView(views.APIView):
         try:
             base_url = self.get_base_url()
             target_url = f"{base_url}/{path.lstrip('/')}"
-            
+
             # Forward the request to AI backend
             response = requests.request(
                 method=method,
@@ -28,19 +28,18 @@ class BaseAIProxyView(views.APIView):
                 data=data if files else None,
                 params=params,
                 files=files,
-                timeout=30
+                timeout=30,
             )
-            
+
             # Try to return JSON if possible, otherwise return raw content
             try:
                 return Response(response.json(), status=response.status_code)
             except ValueError:
                 return Response(response.content, status=response.status_code)
-                
+
         except Exception as e:
             return Response(
-                {"error": str(e)}, 
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
 
@@ -48,7 +47,8 @@ class RateProxyView(BaseAIProxyView):
     """
     Proxy for /rate endpoint
     """
-    permission_classes = [permissions.AllowAny] # Matching original BotRateProxyView
+
+    permission_classes = [permissions.AllowAny]  # Matching original BotRateProxyView
 
     @swagger_auto_schema(
         operation_summary="Get current rate",
@@ -75,6 +75,7 @@ class PromptProxyView(BaseAIProxyView):
     """
     Proxy for /prompt endpoint
     """
+
     @swagger_auto_schema(
         operation_summary="Get AI prompt",
         tags=["AI Proxy"],
@@ -100,6 +101,7 @@ class KnowledgeProxyView(BaseAIProxyView):
     """
     Proxy for /knowledge endpoint
     """
+
     @swagger_auto_schema(
         operation_summary="List knowledge base",
         tags=["AI Proxy"],
@@ -112,13 +114,16 @@ class KnowledgeUploadProxyView(BaseAIProxyView):
     """
     Proxy for /knowledge/upload endpoint
     """
+
     @swagger_auto_schema(
         operation_summary="Upload to knowledge base",
         tags=["AI Proxy"],
     )
     def post(self, request):
         # Handle file upload proxying
-        files = {k: (v.name, v.read(), v.content_type) for k, v in request.FILES.items()}
+        files = {
+            k: (v.name, v.read(), v.content_type) for k, v in request.FILES.items()
+        }
         # Remove files from data to avoid double sending or errors
         data = {k: v for k, v in request.data.items() if k not in request.FILES}
         return self.proxy_request("POST", "/knowledge/upload", data=data, files=files)
@@ -128,6 +133,7 @@ class KnowledgeDetailProxyView(BaseAIProxyView):
     """
     Proxy for /knowledge/{knowledge_id} endpoint
     """
+
     @swagger_auto_schema(
         operation_summary="Delete knowledge item",
         tags=["AI Proxy"],
@@ -140,6 +146,7 @@ class ProductTemplateProxyView(BaseAIProxyView):
     """
     Proxy for /products/upload-template endpoint
     """
+
     @swagger_auto_schema(
         operation_summary="Get product upload template",
         tags=["AI Proxy"],
@@ -152,12 +159,15 @@ class ProductUploadProxyView(BaseAIProxyView):
     """
     Proxy for /products/upload endpoint
     """
+
     @swagger_auto_schema(
         operation_summary="Upload products",
         tags=["AI Proxy"],
     )
     def post(self, request):
-        files = {k: (v.name, v.read(), v.content_type) for k, v in request.FILES.items()}
+        files = {
+            k: (v.name, v.read(), v.content_type) for k, v in request.FILES.items()
+        }
         # Remove files from data to avoid double sending or errors
         data = {k: v for k, v in request.data.items() if k not in request.FILES}
         return self.proxy_request("POST", "/products/upload", data=data, files=files)
