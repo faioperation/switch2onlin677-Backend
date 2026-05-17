@@ -171,3 +171,65 @@ class ProductUploadProxyView(BaseAIProxyView):
         # Remove files from data to avoid double sending or errors
         data = {k: v for k, v in request.data.items() if k not in request.FILES}
         return self.proxy_request("POST", "/products/upload", data=data, files=files)
+
+
+class ProductFilterProxyView(BaseAIProxyView):
+    """
+    Proxy for /products/filters endpoint
+    """
+    @swagger_auto_schema(
+        operation_summary="Get product filters",
+        tags=["AI Proxy"],
+    )
+    def get(self, request):
+        return self.proxy_request("GET", "/products/filters", params=request.query_params)
+
+
+class ProductListProxyView(BaseAIProxyView):
+    """
+    Proxy for /products endpoint
+    """
+    @swagger_auto_schema(
+        operation_summary="List products",
+        tags=["AI Proxy"],
+    )
+    def get(self, request):
+        return self.proxy_request("GET", "/products", params=request.query_params)
+
+
+class ProductDetailProxyView(BaseAIProxyView):
+    """
+    Proxy for /products/{barcode} endpoints (GET, PUT, DELETE)
+    """
+    @swagger_auto_schema(
+        operation_summary="Get product by barcode",
+        tags=["AI Proxy"],
+    )
+    def get(self, request, barcode):
+        return self.proxy_request("GET", f"/products/{barcode}")
+
+    @swagger_auto_schema(
+        operation_summary="Update product by barcode",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                "name": openapi.Schema(type=openapi.TYPE_STRING),
+                "price": openapi.Schema(type=openapi.TYPE_NUMBER),
+                "description": openapi.Schema(type=openapi.TYPE_STRING),
+                "category": openapi.Schema(type=openapi.TYPE_STRING),
+                "stock": openapi.Schema(type=openapi.TYPE_INTEGER),
+                "image_url": openapi.Schema(type=openapi.TYPE_STRING),
+            },
+        ),
+        tags=["AI Proxy"],
+    )
+    def put(self, request, barcode):
+        return self.proxy_request("PUT", f"/products/{barcode}", data=request.data)
+
+    @swagger_auto_schema(
+        operation_summary="Delete product by barcode",
+        tags=["AI Proxy"],
+    )
+    def delete(self, request, barcode):
+        return self.proxy_request("DELETE", f"/products/{barcode}")
+
