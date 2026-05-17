@@ -17,6 +17,11 @@ from ai_proxy.schemas import (
     BRAND_DETAILS_RESPONSE,
     BRAND_LIST_PARAMETERS,
     BRAND_LIST_RESPONSE,
+    SUBCATEGORY_CREATE_REQUEST,
+    SUBCATEGORY_CREATE_RESPONSE,
+    SUBCATEGORY_DETAILS_RESPONSE,
+    SUBCATEGORY_LIST_RESPONSE,
+    SUBCATEGORY_LIST_PARAMETERS,
 )
 
 
@@ -374,3 +379,64 @@ class BrandDetailsProxyView(BaseAIProxyView):
     )
     def get(self, request, id):
         return self.proxy_request("GET", f"/brands/{id}")
+
+
+class SubcategoryListCreateProxyView(BaseAIProxyView):
+    """
+    Proxy for /subcategories endpoint
+    """
+
+    @swagger_auto_schema(
+        operation_summary="List Subcategories",
+        operation_description="""
+Retrieve subcategory list with:
+
+- Parent category filtering
+- Search
+- Active filter
+- Pagination
+""",
+        tags=["AI Proxy Subcategories"],
+        manual_parameters=SUBCATEGORY_LIST_PARAMETERS,
+        responses={
+            200: SUBCATEGORY_LIST_RESPONSE,
+        },
+    )
+    def get(self, request):
+        return self.proxy_request("GET", "/subcategories", params=request.query_params)
+
+    @swagger_auto_schema(
+        operation_summary="Create Subcategory",
+        operation_description="""
+Create a new subcategory under an existing category.
+
+Features:
+- Parent category validation
+- Duplicate detection scoped to category
+- Arabic name support
+""",
+        tags=["AI Proxy Subcategories"],
+        request_body=SUBCATEGORY_CREATE_REQUEST,
+        responses={
+            201: SUBCATEGORY_CREATE_RESPONSE,
+        },
+    )
+    def post(self, request):
+        return self.proxy_request("POST", "/subcategories", data=request.data)
+
+
+class SubcategoryDetailsProxyView(BaseAIProxyView):
+    """
+    Proxy for /subcategories/{id} endpoint
+    """
+
+    @swagger_auto_schema(
+        operation_summary="Get Subcategory Details",
+        operation_description="Retrieve subcategory details by ID",
+        tags=["AI Proxy Subcategories"],
+        responses={
+            200: SUBCATEGORY_DETAILS_RESPONSE,
+        },
+    )
+    def get(self, request, id):
+        return self.proxy_request("GET", f"/subcategories/{id}")

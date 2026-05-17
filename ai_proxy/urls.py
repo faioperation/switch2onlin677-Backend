@@ -14,6 +14,8 @@ from ai_proxy.views import (
     CategoryListCreateProxyView,
     BrandDetailsProxyView,
     BrandListCreateProxyView,
+    SubcategoryDetailsProxyView,
+    SubcategoryListCreateProxyView,
 )
 
 urlpatterns = [
@@ -70,5 +72,15 @@ urlpatterns = [
         "brands/<int:id>/",
         BrandDetailsProxyView.as_view(),
         name="proxy-brand-details",
+    ),
+    path(
+        "subcategories/",
+        SubcategoryListCreateProxyView.as_view(),
+        name="proxy-subcategory-list-create",
+    ),
+    path(
+        "subcategories/<int:id>/",
+        SubcategoryDetailsProxyView.as_view(),
+        name="proxy-subcategory-details",
     ),
 ]
