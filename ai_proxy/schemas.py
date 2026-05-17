@@ -273,3 +273,114 @@ CATEGORY_CREATE_RESPONSE = openapi.Response(
         },
     ),
 )
+
+BRAND_LIST_PARAMETERS = [
+    openapi.Parameter(
+        "search",
+        openapi.IN_QUERY,
+        description="Search by brand name or Arabic name",
+        type=openapi.TYPE_STRING,
+    ),
+    openapi.Parameter(
+        "is_active",
+        openapi.IN_QUERY,
+        description="Filter active/inactive brands",
+        type=openapi.TYPE_BOOLEAN,
+    ),
+    openapi.Parameter(
+        "page",
+        openapi.IN_QUERY,
+        description="Page number",
+        type=openapi.TYPE_INTEGER,
+        default=1,
+    ),
+    openapi.Parameter(
+        "limit",
+        openapi.IN_QUERY,
+        description="Items per page",
+        type=openapi.TYPE_INTEGER,
+        default=100,
+    ),
+]
+
+BRAND_OBJECT_SCHEMA = openapi.Schema(
+    type=openapi.TYPE_OBJECT,
+    properties={
+        "id": openapi.Schema(type=openapi.TYPE_INTEGER),
+        "name": openapi.Schema(type=openapi.TYPE_STRING),
+        "name_ar": openapi.Schema(
+            type=openapi.TYPE_STRING,
+            nullable=True,
+        ),
+        "is_active": openapi.Schema(type=openapi.TYPE_BOOLEAN),
+        "created_at": openapi.Schema(
+            type=openapi.TYPE_STRING,
+            format="date-time",
+            nullable=True,
+        ),
+    },
+)
+
+BRAND_LIST_RESPONSE = openapi.Response(
+    description="Brand list retrieved successfully",
+    schema=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "success": openapi.Schema(type=openapi.TYPE_BOOLEAN),
+            "data": openapi.Schema(type=openapi.TYPE_ARRAY, items=BRAND_OBJECT_SCHEMA),
+            "pagination": openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    "total": openapi.Schema(type=openapi.TYPE_INTEGER),
+                    "page": openapi.Schema(type=openapi.TYPE_INTEGER),
+                    "limit": openapi.Schema(type=openapi.TYPE_INTEGER),
+                },
+            ),
+        },
+    ),
+)
+
+
+BRAND_DETAILS_RESPONSE = openapi.Response(
+    description="Brand details retrieved successfully",
+    schema=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "success": openapi.Schema(type=openapi.TYPE_BOOLEAN),
+            "data": BRAND_OBJECT_SCHEMA,
+        },
+    ),
+)
+
+
+BRAND_CREATE_REQUEST = openapi.Schema(
+    type=openapi.TYPE_OBJECT,
+    required=["name"],
+    properties={
+        "name": openapi.Schema(type=openapi.TYPE_STRING, description="Brand name"),
+        "name_ar": openapi.Schema(
+            type=openapi.TYPE_STRING,
+            description="Arabic brand name",
+            nullable=True,
+        ),
+        "is_active": openapi.Schema(
+            type=openapi.TYPE_BOOLEAN,
+            default=True,
+        ),
+    },
+)
+
+
+BRAND_CREATE_RESPONSE = openapi.Response(
+    description="Brand created successfully",
+    schema=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "success": openapi.Schema(type=openapi.TYPE_BOOLEAN),
+            "message": openapi.Schema(
+                type=openapi.TYPE_STRING, example="Brand created successfully"
+            ),
+            "data": BRAND_OBJECT_SCHEMA,
+        },
+    ),
+)

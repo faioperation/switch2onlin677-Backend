@@ -12,7 +12,11 @@ from ai_proxy.schemas import (
     CATEGORY_DETAILS_RESPONSE,
     CATEGORY_LIST_PARAMETERS,
     CATEGORY_LIST_RESPONSE,
-    CATEGORY_OBJECT_SCHEMA,
+    BRAND_CREATE_REQUEST,
+    BRAND_CREATE_RESPONSE,
+    BRAND_DETAILS_RESPONSE,
+    BRAND_LIST_PARAMETERS,
+    BRAND_LIST_RESPONSE,
 )
 
 
@@ -311,3 +315,62 @@ class CategoryDetailsProxyView(BaseAIProxyView):
     )
     def get(self, request, id):
         return self.proxy_request("GET", f"/categories/{id}")
+
+
+class BrandListCreateProxyView(BaseAIProxyView):
+    """
+    Proxy for /brands endpoint
+    """
+
+    @swagger_auto_schema(
+        operation_summary="List Brands",
+        operation_description="""
+Retrieve brand list with:
+
+- Search
+- Active filter
+- Pagination
+""",
+        tags=["AI Proxy Brands"],
+        manual_parameters=BRAND_LIST_PARAMETERS,
+        responses={
+            200: BRAND_LIST_RESPONSE,
+        },
+    )
+    def get(self, request):
+        return self.proxy_request("GET", "/brands", params=request.query_params)
+
+    @swagger_auto_schema(
+        operation_summary="Create Brand",
+        operation_description="""
+Create a new brand.
+
+Features:
+- Case-insensitive duplicate detection
+- Arabic name support
+""",
+        tags=["AI Proxy Brands"],
+        request_body=BRAND_CREATE_REQUEST,
+        responses={
+            201: BRAND_CREATE_RESPONSE,
+        },
+    )
+    def post(self, request):
+        return self.proxy_request("POST", "/brands", data=request.data)
+
+
+class BrandDetailsProxyView(BaseAIProxyView):
+    """
+    Proxy for /brands/{id} endpoint
+    """
+
+    @swagger_auto_schema(
+        operation_summary="Get Brand Details",
+        operation_description="Retrieve brand details by ID",
+        tags=["AI Proxy Brands"],
+        responses={
+            200: BRAND_DETAILS_RESPONSE,
+        },
+    )
+    def get(self, request, id):
+        return self.proxy_request("GET", f"/brands/{id}")
