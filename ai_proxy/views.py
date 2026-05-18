@@ -127,7 +127,9 @@ class KnowledgeUploadProxyView(BaseAIProxyView):
         }
         # Remove files from data to avoid double sending or errors
         data = {k: v for k, v in request.data.items() if k not in request.FILES}
-        return self.proxy_request("POST", "/knowledge/upload", data=data, files=files)
+        return self.proxy_request(
+            "POST", "/knowledge/upload", data=data, files=files, params=request.query_params
+        )
 
 
 class KnowledgeDetailProxyView(BaseAIProxyView):
@@ -171,7 +173,9 @@ class ProductUploadProxyView(BaseAIProxyView):
         }
         # Remove files from data to avoid double sending or errors
         data = {k: v for k, v in request.data.items() if k not in request.FILES}
-        return self.proxy_request("POST", "/products/upload", data=data, files=files)
+        return self.proxy_request(
+            "POST", "/products/upload", data=data, files=files, params=request.query_params
+        )
 
 
 class ProductFilterProxyView(BaseAIProxyView):
