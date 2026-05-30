@@ -13,7 +13,63 @@ schema_view = get_schema_view(
     openapi.Info(
         title="AI Sales & Engagement Chatbot with SAP Integration",
         default_version="v1",
-        description="AI Sales & Engagement Chatbot with SAP Integration",
+        description="""
+AI Sales & Engagement Chatbot API with SAP Integration.
+
+---
+
+## Product Filter (all AI endpoints)
+
+Only products meeting **all** of the following are returned:
+- `product_status = 'active'`
+- `available_qty > 5`
+- `price > 0`
+- `deleted_at IS NULL`
+
+---
+
+## Recommendation Scoring — Hybrid Formula
+
+```
+final_score = W_SEM   × semantic_similarity
+            + W_ED    × editorial_score
+            + W_POP   × popularity_score
+            + W_STK   × availability_score
+            + W_FRESH × freshness_score
+```
+
+| Component | Env Var | Default | Description |
+|---|---|---|---|
+| Semantic | `SCORE_W_SEMANTIC` | 0.40 | 1 − cosine_distance (pgvector) |
+| Editorial | `SCORE_W_EDITORIAL` | 0.22 | Priority + override + flag bonuses |
+| Popularity | `SCORE_W_POPULARITY` | 0.15 | Best-selling flag + sales rank |
+| Stock | `SCORE_W_STOCK` | 0.13 | available_qty / 100, capped at 1.0 |
+| Freshness | `SCORE_W_FRESHNESS` | 0.10 | New arrival recency bonus |
+
+**HybridAIScorer** (active when `RECOMMENDATION_SCORER=hybrid_ai`, recommended at ≥ 50% embedding coverage):
+```
+final = 0.55 × ai_score + 0.45 × editorial_score   # SCORE_ALPHA env var
+```
+
+---
+
+## Error Envelope
+
+All errors follow this structure:
+```json
+{ "success": false, "error": "Human-readable error message." }
+```
+
+| HTTP Code | When |
+|---|---|
+| 200 | Request succeeded |
+| 202 | Upload job queued |
+| 400 | File validation failure (size, extension, MIME, corruption) |
+| 404 | Product, upload job, or resource not found |
+| 422 | Request body validation failed |
+| 500 | DB commit failure, OpenAI API error, or unexpected exception |
+| 503 | Readiness check failed (DB unreachable) |
+""",
         terms_of_service="https://www.google.com/policies/terms/",
         contact=openapi.Contact(email="contact@snippets.local"),
         license=openapi.License(name="BSD License"),
